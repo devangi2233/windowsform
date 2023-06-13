@@ -1,80 +1,77 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CsvHelper;
 using System.Windows.Forms;
 
-
-namespace WindowsFormsApp1
+namespace WindowsFormsApp4
 {
     public partial class Form1 : Form
     {
+
+        private int currentIndex = 0;
+        private int targetIndex = 0;
+
         public Form1()
         {
             InitializeComponent();
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            
 
         }
 
-        private void btn_load_Click(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Filter = "CSV Files (*.csv)|*.csv";
-            dialog.ShowDialog();
-
-            // If the user selected a file, then import the data from the file into the DataGridView.
-            if (dialog.FileName != "")
+            if (int.TryParse(textBox1.Text, out targetIndex))
             {
-                // Create a DataTable object to store the data from the CSV file.
-                DataTable table = new DataTable();
-
-
-                string selectedCsvFilePath = dialog.FileName;
-                txtcsvfilepath.Text = selectedCsvFilePath;
-
-                // Read the data from the CSV file into the DataTable object.
-                using (StreamReader reader = new StreamReader(dialog.FileName))
+                if (targetIndex > 0 && targetIndex <= groupBox1.Controls.Count)
                 {
-                    string[] headers = reader.ReadLine().Split(',');
-                    foreach (string header in headers)
-                    {
-                        table.Columns.Add(header);
-                    }
-
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        string[] rowData = line.Split(',');
-
-                        DataRow row = table.NewRow();
-
-                        for (int i = 0; i < rowData.Length; i++)
-                        {
-                            row[i] = rowData[i];
-                        }
-
-                        table.Rows.Add(row);
-                    }
+                    currentIndex = 0;
+                    SelectNextRadioButton();
                 }
-
-                // Bind the DataTable object to the DataGridView control.
-                dataGridView1.DataSource = table;
+                else
+                {
+                    MessageBox.Show("Invalid index. Please enter a number within the range of RadioButtons.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
+            else
+            {
+                MessageBox.Show("Invalid input. Please enter a valid number.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
         }
 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void SelectNextRadioButton()
         {
+
+            if (currentIndex >= groupBox1.Controls.Count)
+            {
+                currentIndex = 0;
+            }
+
+            RadioButton radioButton = (RadioButton)groupBox1.Controls[currentIndex];
+            radioButton.Checked = true;
+
+            currentIndex++;
+
+            if (currentIndex <= targetIndex)
+            {
+                Timer timer = new Timer();
+                timer.Interval = 1000; // Adjust the interval as per your requirement
+                timer.Tick += (sender, e) =>
+                {
+                    timer.Stop();
+                    SelectNextRadioButton();
+                };
+                timer.Start();
+            }
 
         }
     }
